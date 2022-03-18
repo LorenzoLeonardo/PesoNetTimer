@@ -7,6 +7,7 @@
 #include "PesoNetTimer.h"
 #include "PesoNetTimerDlg.h"
 #include "afxdialogex.h"
+#include <strsafe.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,6 +73,7 @@ BEGIN_MESSAGE_MAP(CPesoNetTimerDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CPesoNetTimerDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CPesoNetTimerDlg::OnBnClickedCancel)
 	ON_MESSAGE(WM_DISPLAY_COUNT_DOWN, &CPesoNetTimerDlg::OnDisplayCountDown)
+	ON_MESSAGE(WM_TRAYICON_EVENT, &CPesoNetTimerDlg::OnTrayIconEvent)
 END_MESSAGE_MAP()
 
 
@@ -116,6 +118,8 @@ BOOL CPesoNetTimerDlg::OnInitDialog()
 	InitializeTime();
 	EnableCloseButton(FALSE);
 	MoveWindow(&rect);
+
+	
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -203,6 +207,11 @@ void CPesoNetTimerDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		CAboutDlg dlgAbout;
 		dlgAbout.DoModal();
 	}
+	else if ((nID & SC_MINIMIZE) == SC_MINIMIZE)
+	{
+		ShowWindow(SW_HIDE);
+		CDialogEx::OnSysCommand(nID, lParam);
+	}
 	else
 	{
 		CDialogEx::OnSysCommand(nID, lParam);
@@ -266,13 +275,16 @@ unsigned _stdcall CPesoNetTimerDlg::TimerThread(void* args)
 			pDlg->ShowWindow(SW_NORMAL);
 			pDlg->SetFocus();
 			pDlg->SetForegroundWindow();
-			::SendMessage(pDlg->GetSafeHwnd(), WM_DISPLAY_COUNT_DOWN, (dwSelectedTimer - dwTimeIdle)/1000, 0);
+			::SendMessage(pDlg->GetSafeHwnd(), WM_DISPLAY_COUNT_DOWN, (dwSelectedTimer - dwTimeIdle)/1000, SW_NORMAL);
 			if ((dwSelectedTimer - dwTimeIdle) < 1000)
 			{
 				system("shutdown /s /f /t 0");
 			}
 		}
-
+		else
+		{
+			::SendMessage(pDlg->GetSafeHwnd(), WM_DISPLAY_COUNT_DOWN, (dwSelectedTimer - dwTimeIdle) / 1000, SW_HIDE);
+		}
 		Sleep(1);
 	} while (WaitForSingleObject(pDlg->m_hStopThread, 0) != WAIT_OBJECT_0);
 	return 0;
@@ -301,7 +313,9 @@ void CPesoNetTimerDlg::OnBnClickedOk()
 	m_hStopThread = CreateEvent(NULL, TRUE, FALSE,NULL);
 	m_hThreadTimer = (HANDLE)_beginthreadex(NULL,0, TimerThread,this,0, NULL);
 	
-	ShowWindow(SW_MINIMIZE);
+	ShowWindow(SW_HIDE);
+	CreateTrayIcon();
+	SetTrayIconTipText(TEXT("Enzo Tech Peso-Net Timer"));
 }
 
 void CPesoNetTimerDlg::OnBnClickedCancel()
@@ -321,16 +335,25 @@ void CPesoNetTimerDlg::OnBnClickedCancel()
 		m_hThreadTimer = NULL;
 		m_hStopThread = NULL;
 	}
+	DestroyTrayIcon();
+	OnOK();
 }
 
 afx_msg LRESULT CPesoNetTimerDlg::OnDisplayCountDown(WPARAM wParam, LPARAM lParam)
 {
-	CString csText;
-	if(wParam <= 1)
-		csText.Format(_T("PC is shutting down in %d second."), (INT)(wParam));
-	else
-		csText.Format(_T("PC is shutting down in %d seconds."), (INT)(wParam));
-	m_ctrlStaticDisplay.SetWindowText(csText);
+	if (lParam == SW_NORMAL)
+	{
+		CString csText;
+		if (wParam <= 1)
+			csText.Format(_T("PC is shutting down in %d second."), (INT)(wParam));
+		else
+			csText.Format(_T("PC is shutting down in %d seconds."), (INT)(wParam));
+		m_ctrlStaticDisplay.SetWindowText(csText);
+	}
+	else if(lParam == SW_HIDE)
+	{
+		m_ctrlStaticDisplay.SetWindowText(_T(""));
+	}
 	return 0;
 }
 
@@ -341,4 +364,140 @@ void CPesoNetTimerDlg::EnableCloseButton(bool bEnable)
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu)
 		pSysMenu->EnableMenuItem(SC_CLOSE, nMenuf);
+}
+
+BOOL CPesoNetTimerDlg::CreateTrayIcon()
+{
+	memset(&m_NID, 0, sizeof(m_NID));
+	m_NID.cbSize = sizeof(m_NID);
+
+	// set tray icon ID
+	m_NID.uID = ID_SYSTEMTRAY;
+
+	// set handle to the window that receives tray icon notifications
+	ASSERT(::IsWindow(GetSafeHwnd()));
+	m_NID.hWnd = GetSafeHwnd();
+
+	// set message that will be sent from tray icon to the window 
+	m_NID.uCallbackMessage = WM_TRAYICON_EVENT;
+
+	// fields that are being set when adding tray icon 
+	m_NID.uFlags = NIF_MESSAGE | NIF_ICON;
+
+	// set image
+	m_NID.hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME));
+
+	if (!m_NID.hIcon)
+		return FALSE;
+
+	m_NID.uVersion = NOTIFYICON_VERSION;
+
+	if (!Shell_NotifyIcon(NIM_ADD, &m_NID))
+		return FALSE;
+
+	return Shell_NotifyIcon(NIM_SETVERSION, &m_NID);
+}
+
+BOOL CPesoNetTimerDlg::DestroyTrayIcon()
+{
+	return Shell_NotifyIcon(NIM_DELETE, &m_NID);
+}
+
+BOOL CPesoNetTimerDlg::SetTrayIconTipText(LPCTSTR pszText)
+{
+	if (StringCchCopy(m_NID.szTip, sizeof(m_NID.szTip), pszText) != S_OK)
+		return FALSE;
+
+	m_NID.uFlags |= NIF_TIP;
+	return Shell_NotifyIcon(NIM_MODIFY, &m_NID);
+}
+
+BOOL CPesoNetTimerDlg::ShowTrayIconBalloon(LPCTSTR pszTitle, LPCTSTR pszText, UINT unTimeout, DWORD dwInfoFlags)
+{
+	m_NID.uFlags |= NIF_INFO;
+	m_NID.uTimeout = unTimeout;
+	m_NID.dwInfoFlags = dwInfoFlags;
+
+	if (StringCchCopy(m_NID.szInfoTitle, sizeof(m_NID.szInfoTitle), pszTitle) != S_OK)
+		return FALSE;
+
+	if (StringCchCopy(m_NID.szInfo, sizeof(m_NID.szInfo), pszText) != S_OK)
+		return FALSE;
+
+	return Shell_NotifyIcon(NIM_MODIFY, &m_NID);
+}
+
+BOOL CPesoNetTimerDlg::SetTrayIcon(HICON hIcon)
+{
+	m_NID.hIcon = hIcon;
+	m_NID.uFlags |= NIF_ICON;
+
+	return Shell_NotifyIcon(NIM_MODIFY, &m_NID);
+}
+
+BOOL CPesoNetTimerDlg::SetTrayIcon(WORD wIconID)
+{
+	HICON hIcon = LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(wIconID));
+
+	if (!hIcon)
+		return FALSE;
+
+	return SetTrayIcon(hIcon);
+}
+
+void CPesoNetTimerDlg::OnDestroy()
+{
+	
+	CDialog::OnDestroy();
+}
+
+LRESULT CPesoNetTimerDlg::OnTrayIconEvent(WPARAM wParam, LPARAM lParam)
+{
+	if ((UINT)wParam != ID_SYSTEMTRAY)
+		return ERROR_SUCCESS;
+
+	switch ((UINT)lParam)
+	{
+		case WM_MOUSEMOVE:
+		{
+			// do something
+			// e.g. save mouse position in time of event
+			GetCursorPos(&m_ptMouseHoverEvent);
+			break;
+		}
+		case WM_LBUTTONDBLCLK:
+		{
+			// do something
+			// e.g. save mouse position in time of event
+			ShowWindow(SW_NORMAL);
+			DestroyTrayIcon();
+			break;
+		}
+/*		case WM_LBUTTONUP:
+		{
+			// e.g. show main dialog or set (new) tip text and display baloon:
+
+			CTime timeCurr = CTime::GetCurrentTime();
+			CString strTimeCurr;
+			strTimeCurr.Format(TEXT("%d:%d:%d"), timeCurr.GetHour(), timeCurr.GetMinute(), timeCurr.GetSecond());
+			CString strText(TEXT("This text was set at "));
+			strText += strTimeCurr;
+
+			SetTrayIconTipText((LPCTSTR)strText);
+
+			ShowTrayIconBalloon(TEXT("Baloon message title"), TEXT("Left click!"), 1000, NIIF_INFO);
+
+			break;
+		}
+		case WM_RBUTTONUP:
+		{
+			// e.g. show context menu or disable tip and display baloon:
+
+			SetTrayIconTipText((LPCTSTR)TEXT(""));
+			ShowTrayIconBalloon(TEXT("Baloon message title"), TEXT("Right click!"), 1000, NIIF_INFO);
+			break;
+		}*/
+	}
+
+	return ERROR_SUCCESS;
 }

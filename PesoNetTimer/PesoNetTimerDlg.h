@@ -7,6 +7,12 @@
 using namespace std;
 
 #define WM_DISPLAY_COUNT_DOWN WM_USER + 1
+#define WM_TRAYICON_EVENT (WM_APP + 2)
+
+
+#define ID_SYSTEMTRAY 0x1000
+#define ID_ICON_TRAY_INITIAL 0x2000
+
 class CTimeChoice
 {
 public:
@@ -54,4 +60,33 @@ protected:
 	void EnableCloseButton(bool bEnable);
 private:
 	CStatic m_ctrlStaticDisplay;
+
+
+protected:
+	// tray icon data
+	NOTIFYICONDATA m_NID;
+
+	CPoint m_ptMouseHoverEvent;
+
+	// adds icon to the system tray
+	BOOL CreateTrayIcon();
+
+	// displays rectangular tip
+	BOOL SetTrayIconTipText(LPCTSTR pszText);
+
+	// displays baloon notification
+	// unTimeout is in milliseconds
+	BOOL ShowTrayIconBalloon(LPCTSTR pszTitle, LPCTSTR pszText, UINT unTimeout, DWORD dwInfoFlags);
+
+	// sets icon resource
+	BOOL SetTrayIcon(HICON hIcon);
+
+	// sets icon resource
+	BOOL SetTrayIcon(WORD wIconID);
+
+	// removes icon from tray
+	BOOL DestroyTrayIcon();
+
+	afx_msg LRESULT OnTrayIconEvent(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnDestroy();
 };
