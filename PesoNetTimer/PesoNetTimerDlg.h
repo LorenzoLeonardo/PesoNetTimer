@@ -5,6 +5,8 @@
 #pragma once
 #include <vector>
 using namespace std;
+
+#define WM_DISPLAY_COUNT_DOWN WM_USER + 1
 class CTimeChoice
 {
 public:
@@ -47,4 +49,9 @@ protected:
 public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();
+protected:
+	afx_msg LRESULT OnDisplayCountDown(WPARAM wParam, LPARAM lParam);
+	void EnableCloseButton(bool bEnable);
+private:
+	CStatic m_ctrlStaticDisplay;
 };

@@ -62,6 +62,7 @@ void CPesoNetTimerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO_TIME, m_ctrlComboBoxTime);
+	DDX_Control(pDX, IDC_STATIC_DISPLAY, m_ctrlStaticDisplay);
 }
 
 BEGIN_MESSAGE_MAP(CPesoNetTimerDlg, CDialogEx)
@@ -70,6 +71,7 @@ BEGIN_MESSAGE_MAP(CPesoNetTimerDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDOK, &CPesoNetTimerDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDCANCEL, &CPesoNetTimerDlg::OnBnClickedCancel)
+	ON_MESSAGE(WM_DISPLAY_COUNT_DOWN, &CPesoNetTimerDlg::OnDisplayCountDown)
 END_MESSAGE_MAP()
 
 
@@ -80,7 +82,12 @@ BOOL CPesoNetTimerDlg::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	// Add "About..." menu item to system menu.
+	RECT rect;
+	GetClientRect(&rect);
 
+	rect.bottom += 35;
+	rect.right += 10;
+	//SetWindowPos(&this->wndTopMost, rect.left, rect.top, rect.right, rect.bottom, SWP_NOMOVE | SWP_NOSIZE);
 	// IDM_ABOUTBOX must be in the system command range.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
@@ -107,7 +114,8 @@ BOOL CPesoNetTimerDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 
 	InitializeTime();
-
+	EnableCloseButton(FALSE);
+	MoveWindow(&rect);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -243,6 +251,7 @@ unsigned _stdcall CPesoNetTimerDlg::TimerThread(void* args)
 	LASTINPUTINFO lastInput;
 	DWORD dwTickCount = 0;
 	DWORD dwSelectedTimer = pDlg->m_dwSelectedTime;
+	DWORD dwTimeIdle = 0;
 	BOOL bRet = 0;
 	ZeroMemory(&lastInput, sizeof(lastInput));
 	lastInput.cbSize = sizeof(lastInput);
@@ -251,10 +260,20 @@ unsigned _stdcall CPesoNetTimerDlg::TimerThread(void* args)
 	{
 		bRet = GetLastInputInfo(&lastInput);
 		dwTickCount = GetTickCount();
-		if ((dwTickCount - lastInput.dwTime) >= dwSelectedTimer)
+		dwTimeIdle = dwTickCount - lastInput.dwTime;
+		if ((dwSelectedTimer - dwTimeIdle) < 10000)
 		{
-			system("shutdown /s /t 0");
+			pDlg->ShowWindow(SW_NORMAL);
+			pDlg->SetFocus();
+			pDlg->SetForegroundWindow();
+			::SendMessage(pDlg->GetSafeHwnd(), WM_DISPLAY_COUNT_DOWN, (dwSelectedTimer - dwTimeIdle)/1000, 0);
+			if ((dwSelectedTimer - dwTimeIdle) < 1000)
+			{
+				system("shutdown /s /f /t 0");
+			}
 		}
+
+		Sleep(1);
 	} while (WaitForSingleObject(pDlg->m_hStopThread, 0) != WAIT_OBJECT_0);
 	return 0;
 }
@@ -268,7 +287,12 @@ void CPesoNetTimerDlg::OnBnClickedOk()
 	if (m_hThreadTimer)
 	{
 		SetEvent(m_hStopThread);
-		WaitForSingleObject(m_hThreadTimer, INFINITE);
+		while (::MsgWaitForMultipleObjects(1, &m_hThreadTimer, FALSE, INFINITE,
+			QS_SENDMESSAGE) == WAIT_OBJECT_0 + 1)
+		{
+			MSG message;
+			::PeekMessage(&message, 0, 0, 0, PM_NOREMOVE);
+		}
 		CloseHandle(m_hThreadTimer);
 		CloseHandle(m_hStopThread);
 		m_hThreadTimer = NULL;
@@ -277,14 +301,44 @@ void CPesoNetTimerDlg::OnBnClickedOk()
 	m_hStopThread = CreateEvent(NULL, TRUE, FALSE,NULL);
 	m_hThreadTimer = (HANDLE)_beginthreadex(NULL,0, TimerThread,this,0, NULL);
 	
-
 	ShowWindow(SW_MINIMIZE);
 }
-
 
 void CPesoNetTimerDlg::OnBnClickedCancel()
 {
 	// TODO: Add your control notification handler code here
-	ShowWindow(SW_MINIMIZE);
+	if (m_hThreadTimer)
+	{
+		SetEvent(m_hStopThread);
+		while (::MsgWaitForMultipleObjects(1, &m_hThreadTimer, FALSE, INFINITE,
+			QS_SENDMESSAGE) == WAIT_OBJECT_0 + 1)
+		{
+			MSG message;
+			::PeekMessage(&message, 0, 0, 0, PM_NOREMOVE);
+		}
+		CloseHandle(m_hThreadTimer);
+		CloseHandle(m_hStopThread);
+		m_hThreadTimer = NULL;
+		m_hStopThread = NULL;
+	}
 }
 
+afx_msg LRESULT CPesoNetTimerDlg::OnDisplayCountDown(WPARAM wParam, LPARAM lParam)
+{
+	CString csText;
+	if(wParam <= 1)
+		csText.Format(_T("PC is shutting down in %d second."), (INT)(wParam));
+	else
+		csText.Format(_T("PC is shutting down in %d seconds."), (INT)(wParam));
+	m_ctrlStaticDisplay.SetWindowText(csText);
+	return 0;
+}
+
+void CPesoNetTimerDlg::EnableCloseButton(bool bEnable)
+{
+	UINT nMenuf = bEnable ? (MF_BYCOMMAND) : (MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
+
+	CMenu* pSysMenu = GetSystemMenu(FALSE);
+	if (pSysMenu)
+		pSysMenu->EnableMenuItem(SC_CLOSE, nMenuf);
+}
