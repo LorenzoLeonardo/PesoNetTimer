@@ -13,6 +13,18 @@ using namespace std;
 #define ID_SYSTEMTRAY 0x1000
 #define ID_ICON_TRAY_INITIAL 0x2000
 
+
+class CMyStatic : public CStatic
+{
+public:
+	CMyStatic();
+	DECLARE_MESSAGE_MAP()
+protected:
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnMouseHover(UINT nFlags, CPoint point);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT	message);
+};
+
 class CTimeChoice
 {
 public:
@@ -61,7 +73,7 @@ protected:
 private:
 	CStatic m_ctrlStaticDisplay;
 
-
+	CToolTipCtrl* m_pToolTipCtrl;
 protected:
 	// tray icon data
 	NOTIFYICONDATA m_NID;
@@ -89,4 +101,12 @@ protected:
 
 	afx_msg LRESULT OnTrayIconEvent(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnDestroy();
+	CMyStatic m_ctrlStaticLogo;
+public:
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnStatic();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnNcMouseMove(UINT nHitTest, CPoint point);
+	afx_msg void OnMouseHover(UINT nFlags, CPoint point);
 };

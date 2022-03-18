@@ -13,7 +13,47 @@
 #define new DEBUG_NEW
 #endif
 
+CMyStatic::CMyStatic()
+{
 
+}
+BEGIN_MESSAGE_MAP(CMyStatic, CStatic)
+	ON_WM_MOUSEMOVE()
+	ON_WM_MOUSEHOVER()
+	ON_WM_SETCURSOR()
+END_MESSAGE_MAP()
+
+void CMyStatic::OnMouseMove(UINT nFlags, CPoint point)
+{
+	
+	CStatic::OnMouseMove(nFlags, point);
+	::SetCursor(::LoadCursor(NULL, IDC_HAND));
+}
+
+BOOL CMyStatic::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT	message)
+{
+
+	::SetCursor(::LoadCursor(NULL, IDC_HAND));
+	return TRUE;
+//	if (cursor)
+	//{
+		//if (cursor == (char*)-1)
+			// the main exe contains a custom cursor (resource 104)
+			//SetCursor(LoadCursor(AfxGetInstanceHandle(),
+				//MAKEINTRESOURCE(104)));
+		//else
+			//return SetCursor(LoadCursor(NULL, cursor));
+//		return true;
+//	}
+//	else
+//		return CStatic::OnSetCursor(pWnd, nHitTest, message);
+
+}
+
+void CMyStatic::OnMouseHover(UINT nFlags, CPoint point)
+{
+	SetCursor(LoadCursor(NULL, IDC_HAND));
+}
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialogEx
@@ -63,6 +103,7 @@ void CPesoNetTimerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO_TIME, m_ctrlComboBoxTime);
+	DDX_Control(pDX, IDC_STATIC_LOGO, m_ctrlStaticLogo);
 	DDX_Control(pDX, IDC_STATIC_DISPLAY, m_ctrlStaticDisplay);
 }
 
@@ -74,6 +115,11 @@ BEGIN_MESSAGE_MAP(CPesoNetTimerDlg, CDialogEx)
 	ON_BN_CLICKED(IDCANCEL, &CPesoNetTimerDlg::OnBnClickedCancel)
 	ON_MESSAGE(WM_DISPLAY_COUNT_DOWN, &CPesoNetTimerDlg::OnDisplayCountDown)
 	ON_MESSAGE(WM_TRAYICON_EVENT, &CPesoNetTimerDlg::OnTrayIconEvent)
+	ON_WM_MOUSEMOVE()
+	ON_COMMAND(IDC_STATIC_LOGO, &CPesoNetTimerDlg::OnStatic)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_NCMOUSEMOVE()
+	ON_WM_MOUSEHOVER()
 END_MESSAGE_MAP()
 
 
@@ -87,9 +133,9 @@ BOOL CPesoNetTimerDlg::OnInitDialog()
 	RECT rect;
 	GetClientRect(&rect);
 
-	rect.bottom += 35;
-	rect.right += 10;
-	//SetWindowPos(&this->wndTopMost, rect.left, rect.top, rect.right, rect.bottom, SWP_NOMOVE | SWP_NOSIZE);
+	//rect.bottom += 35;
+	//rect.right += 10;
+	
 	// IDM_ABOUTBOX must be in the system command range.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
@@ -114,12 +160,27 @@ BOOL CPesoNetTimerDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-
+	m_ctrlStaticLogo.ModifyStyle(NULL, SS_NOTIFY);
 	InitializeTime();
 	EnableCloseButton(FALSE);
 	MoveWindow(&rect);
 
-	
+	SetWindowPos(&this->wndTopMost, rect.left, rect.top, rect.right, rect.bottom, SWP_NOMOVE | SWP_NOSIZE);
+
+	m_pToolTipCtrl = new CToolTipCtrl();
+	if (!m_pToolTipCtrl->Create(this, TTS_ALWAYSTIP))
+	{
+		TRACE(_T("Unable To create ToolTip\n"));
+		return TRUE;
+	}
+
+	if (m_pToolTipCtrl->AddTool(&m_ctrlStaticLogo, _T("Contact me at my Facebook Messenger for support.")))
+	{
+		TRACE(_T("Unable to add OK button to the tooltip\n"));
+	}
+
+	m_pToolTipCtrl->Activate(TRUE);
+	//m_pToolTipCtrl->SetToolRect(&m_ctrlStaticLogo,rect);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -335,6 +396,9 @@ void CPesoNetTimerDlg::OnBnClickedCancel()
 		m_hThreadTimer = NULL;
 		m_hStopThread = NULL;
 	}
+
+	m_pToolTipCtrl->DestroyWindow();
+	delete m_pToolTipCtrl;
 	DestroyTrayIcon();
 	OnOK();
 }
@@ -500,4 +564,104 @@ LRESULT CPesoNetTimerDlg::OnTrayIconEvent(WPARAM wParam, LPARAM lParam)
 	}
 
 	return ERROR_SUCCESS;
+}
+
+
+void CPesoNetTimerDlg::OnMouseMove(UINT nFlags, CPoint point)
+{
+/*	RECT rectDlg, translatedRect;
+	this->GetWindowRect(&rectDlg);
+	m_ctrlStaticLogo.GetClientRect(&translatedRect);
+
+	translatedRect.left = rectDlg.left + 20;
+	translatedRect.top = rectDlg.top + 30;
+	translatedRect.right = translatedRect.right + translatedRect.left;
+	translatedRect.bottom = translatedRect.bottom + translatedRect.top;
+
+	if ((translatedRect.left <= (point.x)) && ((point.x) <= translatedRect.right) &&
+		((translatedRect.top) <= point.y) && (point.y <= (translatedRect.bottom)))
+	{
+	//	m_pToolTipCtrl->EnableToolTips();
+		SetCursor(LoadCursor(NULL, IDC_HAND));
+	}
+	else
+	{
+	//	m_pToolTipCtrl->EnableToolTips(FALSE);
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+	}
+	*/
+
+	CDialogEx::OnMouseMove(nFlags, point);
+}
+
+
+void CPesoNetTimerDlg::OnStatic()
+{
+	// TODO: Add your command handler code here
+	ShellExecute(NULL, _T("open"), _T("https://m.me/Lorenzo.Leonardo.92"), NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+BOOL CPesoNetTimerDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	m_pToolTipCtrl->RelayEvent(pMsg);
+	
+	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+void CPesoNetTimerDlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	RECT rectDlg, translatedRect;
+	this->GetWindowRect(&rectDlg);
+	m_ctrlStaticLogo.GetClientRect(&translatedRect);
+
+	translatedRect.left = rectDlg.left + 20;
+	translatedRect.top = rectDlg.top + 30;
+	translatedRect.right = translatedRect.right + translatedRect.left;
+	translatedRect.bottom = translatedRect.bottom + translatedRect.top;
+
+	if ((translatedRect.left <= (point.x)) && ((point.x) <= translatedRect.right) &&
+		((translatedRect.top) <= point.y) && (point.y <= (translatedRect.bottom)))
+	{
+		ShellExecute(NULL, _T("open"), _T("https://m.me/Lorenzo.Leonardo.92"), NULL, NULL, SW_SHOWNORMAL);
+	}
+	CDialogEx::OnLButtonDown(nFlags, point);
+}
+
+
+void CPesoNetTimerDlg::OnNcMouseMove(UINT nHitTest, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CDialogEx::OnNcMouseMove(nHitTest, point);
+}
+
+
+void CPesoNetTimerDlg::OnMouseHover(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	RECT rectDlg, translatedRect;
+	this->GetWindowRect(&rectDlg);
+	m_ctrlStaticLogo.GetClientRect(&translatedRect);
+
+	translatedRect.left = rectDlg.left + 20;
+	translatedRect.top = rectDlg.top + 30;
+	translatedRect.right = translatedRect.right + translatedRect.left;
+	translatedRect.bottom = translatedRect.bottom + translatedRect.top;
+
+	if ((translatedRect.left <= (point.x)) && ((point.x) <= translatedRect.right) &&
+		((translatedRect.top) <= point.y) && (point.y <= (translatedRect.bottom)))
+	{
+		//	m_pToolTipCtrl->EnableToolTips();
+		SetCursor(LoadCursor(NULL, IDC_HAND));
+	}
+	else
+	{
+		//	m_pToolTipCtrl->EnableToolTips(FALSE);
+		SetCursor(LoadCursor(NULL, IDC_ARROW));
+	}
+	CDialogEx::OnMouseHover(nFlags, point);
 }

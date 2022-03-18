@@ -207,6 +207,7 @@
     <None Include="res\PesoNetTimer.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\EnzoTechIcon.bmp" />
     <Image Include="res\PesoNetTimer.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

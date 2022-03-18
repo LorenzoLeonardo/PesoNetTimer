@@ -155,14 +155,14 @@ BOOL CPesoNetTimerApp::InitInstance()
 
 	if (!IsAdministrator())
 	{
-		CString csMsg;
+	//	CString csMsg;
 
-		csMsg = _T("Please elevate the process to make the program work. Do you want to proceed?");
-		int bRet = ::MessageBox(GetMainWnd()->GetSafeHwnd(), csMsg, _T("Enzo Tech Peso-Net Timer"), MB_YESNO | MB_ICONQUESTION);
+	//	csMsg = _T("Please elevate the process to make the program work. Do you want to proceed?");
+	//	int bRet = ::MessageBox(GetMainWnd()->GetSafeHwnd(), csMsg, _T("Enzo Tech Peso-Net Timer"), MB_YESNO | MB_ICONQUESTION);
 
-		if (bRet == IDNO)
-			return FALSE;
-		else
+	//	if (bRet == IDNO)
+	//		return FALSE;
+	//	else
 			ElevateProcess();
 	}
 
