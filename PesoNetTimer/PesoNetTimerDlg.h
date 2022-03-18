@@ -43,7 +43,10 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_PESONETTIMER_DIALOG };
 #endif
-
+	void SetChoiceTime(int nChoice)
+	{
+		m_nChoiceTime = nChoice;
+	}
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
@@ -64,6 +67,7 @@ protected:
 	HANDLE m_hThreadTimer;
 	HANDLE m_hStopThread;
 	DWORD  m_dwSelectedTime;
+	int m_nChoiceTime;
 public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedCancel();

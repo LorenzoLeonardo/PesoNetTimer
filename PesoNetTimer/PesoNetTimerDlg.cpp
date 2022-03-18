@@ -258,7 +258,7 @@ void CPesoNetTimerDlg::InitializeTime()
 	{
 		m_ctrlComboBoxTime.AddString(m_vTimeChoice[i].csTimeText);
 	}
-	m_ctrlComboBoxTime.SetCurSel(0);
+	m_ctrlComboBoxTime.SetCurSel(m_nChoiceTime);
 }
 
 void CPesoNetTimerDlg::OnSysCommand(UINT nID, LPARAM lParam)
