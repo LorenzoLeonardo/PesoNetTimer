@@ -62,5 +62,11 @@
     <Image Include="res\EnzoTechIcon.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\Logo.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Logo.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

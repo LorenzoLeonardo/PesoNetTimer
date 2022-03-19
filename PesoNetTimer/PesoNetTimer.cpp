@@ -150,7 +150,7 @@ bool CPesoNetTimerApp::RegistryRoutine()
 		if (dwError == ERROR_ACCESS_DENIED)
 			MessageBox(NULL, _T("Access denied. Please run the program as Administrator"), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
 		else
-			MessageBox(NULL, _T("Contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
+			MessageBox(NULL, _T("The tool has no valid key, please contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
 		return false;
 	}
 	RegCloseKey(hKey);
@@ -158,7 +158,7 @@ bool CPesoNetTimerApp::RegistryRoutine()
 	dwError = RegGetValue(HKEY_LOCAL_MACHINE, REGISTRY_PATH, _T("date"), /*RRF_RT_ANY*/RRF_RT_REG_SZ, NULL, (PVOID)&szValue, &dwSize);
 	if (dwError != ERROR_SUCCESS)
 	{
-		MessageBox(NULL, _T("Contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
+		MessageBox(NULL, _T("The application registry has been tampered. Contact Enzo Tech Computer Solutions for a genuine key."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
 		RegCloseKey(hKey);
 		return false;
 	}
@@ -166,7 +166,7 @@ bool CPesoNetTimerApp::RegistryRoutine()
 	dwError = RegGetValue(HKEY_LOCAL_MACHINE, REGISTRY_PATH, _T("timer"), /*RRF_RT_ANY*/RRF_RT_REG_DWORD, NULL, (PVOID)&dwChoice, &dwSize);
 	if (dwError != ERROR_SUCCESS)
 	{
-		MessageBox(NULL, _T("Contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
+		MessageBox(NULL, _T("The application registry has been tampered. Contact Enzo Tech Computer Solutions for a genuine key."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
 		RegCloseKey(hKey);
 		return false;
 	}
@@ -174,7 +174,7 @@ bool CPesoNetTimerApp::RegistryRoutine()
 	string sAnswer = decrypt(CW2A(szValue).m_szBuffer);
 	if (strcmp(sAnswer.c_str(), CW2A(szValue).m_szBuffer) == 0)
 	{
-		MessageBox(NULL, _T("Contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
+		MessageBox(NULL, _T("The application registry has been tampered. Contact Enzo Tech Computer Solutions for a genuine key."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
 		return false;
 	}
 	m_csDateInstalled = CA2W(sAnswer.c_str()).m_szBuffer;

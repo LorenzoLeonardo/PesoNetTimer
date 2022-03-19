@@ -208,6 +208,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\EnzoTechIcon.bmp" />
+    <Image Include="res\Logo.ico" />
+    <Image Include="res\Logo.png" />
     <Image Include="res\PesoNetTimer.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
