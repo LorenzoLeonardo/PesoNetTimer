@@ -140,7 +140,7 @@ bool CPesoNetTimerApp::RegistryRoutine()
 	HKEY hKey;
 	DWORD dwError = 0;
 	bool bRet = false;
-	TCHAR szValue[MAX_PATH];
+	TCHAR szValue[1024];
 	DWORD dwSize = sizeof(szValue);
 	DWORD dwChoice = 0;
 	memset(szValue, 0, dwSize);
@@ -170,14 +170,14 @@ bool CPesoNetTimerApp::RegistryRoutine()
 		RegCloseKey(hKey);
 		return false;
 	}
-
-	string sAnswer = decrypt(CW2A(szValue).m_szBuffer);
-	if (strcmp(sAnswer.c_str(), CW2A(szValue).m_szBuffer) == 0)
+	string sValue = CW2A(szValue, CP_UTF8).m_psz;
+	string sAnswer = decrypt(sValue);
+	if (strcmp(sAnswer.c_str(), sValue.c_str()) == 0)
 	{
 		MessageBox(NULL, _T("The application registry has been tampered. Contact Enzo Tech Computer Solutions for a genuine key."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
 		return false;
 	}
-	m_csDateInstalled = CA2W(sAnswer.c_str()).m_szBuffer;
+	m_csDateInstalled = CA2W(sAnswer.c_str(), CP_UTF8).m_szBuffer;
 
 	CString csCurrentTime = GetTimeInDays();
 
@@ -212,14 +212,55 @@ char CPesoNetTimerApp::leftRotate(unsigned char n, size_t nTimes)
 	return n;
 }
 
+string CPesoNetTimerApp::convertStringToHexString(string s)
+{
+	string sRes;
+	size_t len = s.length();
+	BYTE byTemp;
+	char szTemp[3];
+	for (size_t i = 0; i < len; i++)
+	{
+		byTemp = s[i];
+		sprintf_s(szTemp, sizeof(szTemp), "%X", byTemp);
+		sRes.append(szTemp);
+	}
+	return sRes;
+}
+
+byte CPesoNetTimerApp::char2int(char input)
+{
+	if (input >= '0' && input <= '9')
+		return input - '0';
+	if (input >= 'A' && input <= 'F')
+		return input - 'A' + 10;
+	if (input >= 'a' && input <= 'f')
+		return input - 'a' + 10;
+	return 0;
+}
+
+string CPesoNetTimerApp::convertHexStringToString(string s)
+{
+	string sRes;
+	size_t len = s.length();
+	BYTE byTemp;
+
+	for (size_t i = 0; i < len; i += 2)
+	{
+		byTemp = char2int(s[i]) << 4;
+		byTemp |= char2int(s[i + 1]);
+		sRes.push_back(byTemp);
+	}
+	return sRes;
+}
+
 string CPesoNetTimerApp::encrypt(string s)
 {
-	string sKey = "061186";
+	string sKey = "EnzoTechComputerSolutions";
 	size_t nLenKey = sKey.length();
 	size_t nLen = s.length();
 	string sNew = "";
 
-	for (size_t i = 0; i < nLenKey; i++)
+	for (int i = 0; i < nLenKey; i++)
 	{
 		sKey[i] = rightRotate(sKey[i], nLenKey);
 	}
@@ -228,17 +269,25 @@ string CPesoNetTimerApp::encrypt(string s)
 	{
 		s[i] = rightRotate(s[i], nLen);
 	}
-	return sKey + s;
+	string sRet = sKey + s;
+	return convertStringToHexString(sRet);
 }
+
 string CPesoNetTimerApp::decrypt(string s)
 {
-	string sKey = "061186";
-	size_t nLenKey = sKey.length();
 	size_t nLen = s.length();
-	string sNew = "";
+	if ((nLen % 2))
+		return s;
 
+	s = convertHexStringToString(s);
+
+	nLen = s.length();
+	string sKey = "EnzoTechComputerSolutions";
+	size_t nLenKey = sKey.length();
+	string sNew = "";
 	string sGetKey = s.substr(0, nLenKey);
-	for (size_t i = 0; i < nLenKey; i++)
+
+	for (int i = 0; i < nLenKey; i++)
 	{
 		sGetKey[i] = leftRotate(sGetKey[i], nLenKey);
 	}
@@ -253,6 +302,7 @@ string CPesoNetTimerApp::decrypt(string s)
 	}
 	return sNew;
 }
+
 BOOL CPesoNetTimerApp::OnlyOneInstance()
 {
 	m_hOneInstanceMutex = CreateMutex(NULL, TRUE, _T("Enzo Tech Peso-Net Timer"));

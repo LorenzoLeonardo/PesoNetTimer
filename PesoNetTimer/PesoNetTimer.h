@@ -30,6 +30,9 @@ public:
 
 	DECLARE_MESSAGE_MAP()
 protected:
+	string convertHexStringToString(string s);
+	byte char2int(char input);
+	string convertStringToHexString(string s);
 	string decrypt(string s);
 	string encrypt(string s);
 	char leftRotate(unsigned char n, size_t nTimes);

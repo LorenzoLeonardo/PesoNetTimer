@@ -37,9 +37,50 @@ char leftRotate(unsigned char n, int nTimes)
 	return n;
 }
 
+string convertStringToHexString(string s)
+{
+	string sRes;
+	size_t len = s.length();
+	BYTE byTemp;
+	char szTemp[3];
+	for (size_t i = 0; i < len; i++)
+	{
+		byTemp = s[i];
+		sprintf_s(szTemp,sizeof(szTemp), "%X", byTemp);
+		sRes.append(szTemp);
+	}
+	return sRes;
+}
+
+byte char2int(char input)
+{
+	if (input >= '0' && input <= '9')
+		return input - '0';
+	if (input >= 'A' && input <= 'F')
+		return input - 'A' + 10;
+	if (input >= 'a' && input <= 'f')
+		return input - 'a' + 10;
+	throw std::invalid_argument("Invalid input string");
+}
+
+string convertHexStringToString(string s)
+{
+	string sRes;
+	size_t len = s.length();
+	BYTE byTemp;
+
+	for (size_t i = 0; i < len; i+=2)
+	{
+		byTemp = char2int(s[i]) << 4;
+		byTemp |= char2int(s[i+1]);
+		sRes.push_back(byTemp);
+	}
+	return sRes;
+}
+
 string encrypt(string s)
 {
-	string sKey = "061186";
+	string sKey = "EnzoTechComputerSolutions";
 	size_t nLenKey = sKey.length();
 	size_t nLen = s.length();
 	string sNew = "";
@@ -54,16 +95,23 @@ string encrypt(string s)
 		s[i] = rightRotate(s[i], nLen);
 	}
 	string sRet = sKey + s;
-	return sRet;
+	return convertStringToHexString(sRet);
 }
+
 string decrypt(string s)
 {
-	string sKey = "061186";
-	size_t nLenKey = sKey.length();
 	size_t nLen = s.length();
-	string sNew = "";
+	if ((nLen % 2))
+		return s;
 
+	s = convertHexStringToString(s);
+
+	nLen = s.length();
+	string sKey = "EnzoTechComputerSolutions";
+	size_t nLenKey = sKey.length();
+	string sNew = "";
 	string sGetKey = s.substr(0, nLenKey);
+
 	for (int i = 0; i < nLenKey; i++)
 	{
 		sGetKey[i] = leftRotate(sGetKey[i], nLenKey);
@@ -103,8 +151,8 @@ int main()
             MessageBox(NULL, _T("Contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
         return 0;
     }
-	_tstring sResult = CA2W(encrypt(CW2A(sDate.c_str()).m_szBuffer).c_str()).m_szBuffer;
-    dwError == RegSetValueEx(hKey, _T("date"), 0, REG_SZ, (LPBYTE)CA2W(encrypt(CW2A(sDate.c_str()).m_szBuffer).c_str()).m_szBuffer, sizeof(TCHAR) * sResult.length());
+	_tstring sResult = CA2W(encrypt(CW2A(sDate.c_str(),CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz;
+    dwError = RegSetValueEx(hKey, _T("date"), 0, REG_SZ, (LPBYTE)CA2W(encrypt(CW2A(sDate.c_str(), CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz, sizeof(TCHAR) * sResult.length());
     if (dwError != ERROR_SUCCESS)
     {
         return 0;
