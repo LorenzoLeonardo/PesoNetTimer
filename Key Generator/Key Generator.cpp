@@ -19,18 +19,16 @@ using namespace std;
 #define REGISTRY_PATH _T("SOFTWARE\\Enzo Tech Peso-Net Timer")
 
 
-char rightRotate(unsigned char n, int nTimes)
-{
-	for (int i = 0; i < nTimes; i++)
+char rightRotate(unsigned char n, size_t nTimes) {
+    for (size_t i = 0; i < nTimes; i++)
 	{
 		n = (n >> 1) | (n << 7);
 	}
 	return n;
 }
 
-char leftRotate(unsigned char n, int nTimes)
-{
-	for (int i = 0; i < nTimes; i++)
+char leftRotate(unsigned char n, size_t nTimes) {
+	for (size_t i = 0; i < nTimes; i++)
 	{
 		n = (n << 1) | (n >> 7);
 	}
@@ -85,7 +83,7 @@ string encrypt(string s)
 	size_t nLen = s.length();
 	string sNew = "";
 
-	for (int i = 0; i < nLenKey; i++)
+	for (size_t i = 0; i < nLenKey; i++)
 	{
 		sKey[i] = rightRotate(sKey[i], nLenKey);
 	}
@@ -112,7 +110,7 @@ string decrypt(string s)
 	string sNew = "";
 	string sGetKey = s.substr(0, nLenKey);
 
-	for (int i = 0; i < nLenKey; i++)
+	for (size_t i = 0; i < nLenKey; i++)
 	{
 		sGetKey[i] = leftRotate(sGetKey[i], nLenKey);
 	}
@@ -152,7 +150,7 @@ int main()
         return 0;
     }
 	_tstring sResult = CA2W(encrypt(CW2A(sDate.c_str(),CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz;
-    dwError = RegSetValueEx(hKey, _T("date"), 0, REG_SZ, (LPBYTE)CA2W(encrypt(CW2A(sDate.c_str(), CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz, sizeof(TCHAR) * sResult.length());
+    dwError = RegSetValueEx(hKey, _T("date"), 0, REG_SZ, (LPBYTE)CA2W(encrypt(CW2A(sDate.c_str(), CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz, sizeof(TCHAR) * (DWORD)sResult.length());
     if (dwError != ERROR_SUCCESS)
     {
         return 0;
