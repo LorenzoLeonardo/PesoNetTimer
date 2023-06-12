@@ -29,7 +29,7 @@ class CTimeChoice
 {
 public:
 	CString csTimeText;
-	DWORD dwMilliseconds;
+	ULONGLONG dwMilliseconds;
 };
 
 // CPesoNetTimerDlg dialog
@@ -66,7 +66,7 @@ protected:
 	void InitializeTime();
 	HANDLE m_hThreadTimer;
 	HANDLE m_hStopThread;
-	DWORD  m_dwSelectedTime;
+	ULONGLONG  m_dwSelectedTime;
 	int m_nChoiceTime;
 public:
 	afx_msg void OnBnClickedOk();

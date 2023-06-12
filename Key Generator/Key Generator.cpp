@@ -9,25 +9,26 @@
 #include <atlconv.h>
 
 #ifndef UNICODE
-    #define _tstring string
-    #define to_tstring to_string
+#define _tstring string
+#define to_tstring to_string
 #else
-    #define _tstring wstring
-    #define to_tstring to_wstring
+#define _tstring wstring
+#define to_tstring to_wstring
 #endif
 using namespace std;
 #define REGISTRY_PATH _T("SOFTWARE\\Enzo Tech Peso-Net Timer")
 
-
-char rightRotate(unsigned char n, size_t nTimes) {
-    for (size_t i = 0; i < nTimes; i++)
+char rightRotate(unsigned char n, size_t nTimes)
+{
+	for (size_t i = 0; i < nTimes; i++)
 	{
 		n = (n >> 1) | (n << 7);
 	}
 	return n;
 }
 
-char leftRotate(unsigned char n, size_t nTimes) {
+char leftRotate(unsigned char n, size_t nTimes)
+{
 	for (size_t i = 0; i < nTimes; i++)
 	{
 		n = (n << 1) | (n >> 7);
@@ -44,7 +45,7 @@ string convertStringToHexString(string s)
 	for (size_t i = 0; i < len; i++)
 	{
 		byTemp = s[i];
-		sprintf_s(szTemp,sizeof(szTemp), "%X", byTemp);
+		sprintf_s(szTemp, sizeof(szTemp), "%X", byTemp);
 		sRes.append(szTemp);
 	}
 	return sRes;
@@ -67,10 +68,10 @@ string convertHexStringToString(string s)
 	size_t len = s.length();
 	BYTE byTemp;
 
-	for (size_t i = 0; i < len; i+=2)
+	for (size_t i = 0; i < len; i += 2)
 	{
 		byTemp = char2int(s[i]) << 4;
-		byTemp |= char2int(s[i+1]);
+		byTemp |= char2int(s[i + 1]);
 		sRes.push_back(byTemp);
 	}
 	return sRes;
@@ -128,43 +129,43 @@ string decrypt(string s)
 
 int main()
 {
-    SYSTEMTIME sysTime;
-    ULONGLONG ulldays;
-    _tstring sDate;
-    DWORD dwError = 0;
-    HKEY hKey;
-    memset(&sysTime, 0, sizeof(sysTime));
-    
-    GetLocalTime(&sysTime);
-    ulldays = ((sysTime.wYear * 12 * 30) + sysTime.wMonth * 30 + sysTime.wDay);
+	SYSTEMTIME sysTime;
+	ULONGLONG ulldays;
+	_tstring sDate;
+	DWORD dwError = 0;
+	HKEY hKey;
+	memset(&sysTime, 0, sizeof(sysTime));
 
-    sDate = to_tstring(ulldays);
+	GetLocalTime(&sysTime);
+	ulldays = ((sysTime.wYear * 12 * 30) + sysTime.wMonth * 30 + sysTime.wDay);
 
-    dwError = RegOpenKeyEx(HKEY_LOCAL_MACHINE, REGISTRY_PATH, 0, KEY_ALL_ACCESS, &hKey);
-    if (dwError != ERROR_SUCCESS)
-    {
-        if (dwError == ERROR_ACCESS_DENIED)
-            MessageBox(NULL, _T("Access denied. Please run the program as Administrator"), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
-        else
-            MessageBox(NULL, _T("Contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
-        return 0;
-    }
-	_tstring sResult = CA2W(encrypt(CW2A(sDate.c_str(),CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz;
-    dwError = RegSetValueEx(hKey, _T("date"), 0, REG_SZ, (LPBYTE)CA2W(encrypt(CW2A(sDate.c_str(), CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz, sizeof(TCHAR) * (DWORD)sResult.length());
-    if (dwError != ERROR_SUCCESS)
-    {
-        return 0;
-    }
-    //std::cout << "Hello World!\n";
+	sDate = to_tstring(ulldays);
 
-    RegCloseKey(hKey);
-    return 0;
+	dwError = RegOpenKeyEx(HKEY_LOCAL_MACHINE, REGISTRY_PATH, 0, KEY_ALL_ACCESS, &hKey);
+	if (dwError != ERROR_SUCCESS)
+	{
+		if (dwError == ERROR_ACCESS_DENIED)
+			MessageBox(NULL, _T("Access denied. Please run the program as Administrator"), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
+		else
+			MessageBox(NULL, _T("Contact Enzo Tech Computer Solutions for activation of the Tool."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
+		return 0;
+	}
+	_tstring sResult = CA2W(encrypt(CW2A(sDate.c_str(), CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz;
+	dwError = RegSetValueEx(hKey, _T("date"), 0, REG_SZ, (LPBYTE)CA2W(encrypt(CW2A(sDate.c_str(), CP_UTF8).m_psz).c_str(), CP_UTF8).m_psz, sizeof(TCHAR) * (DWORD)sResult.length());
+	if (dwError != ERROR_SUCCESS)
+	{
+		return 0;
+	}
+	// std::cout << "Hello World!\n";
+
+	RegCloseKey(hKey);
+	return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
 
-// Tips for Getting Started: 
+// Tips for Getting Started:
 //   1. Use the Solution Explorer window to add/manage files
 //   2. Use the Team Explorer window to connect to source control
 //   3. Use the Output window to see build output and other messages

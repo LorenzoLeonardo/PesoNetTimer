@@ -8,6 +8,10 @@
 #include "PesoNetTimerDlg.h"
 #include "afxdialogex.h"
 #include <strsafe.h>
+#include <TlHelp32.h>
+#include <psapi.h>
+#include <Wtsapi32.h>
+#pragma comment(lib, "Wtsapi32.lib")
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -15,39 +19,37 @@
 
 CMyStatic::CMyStatic()
 {
-
 }
 BEGIN_MESSAGE_MAP(CMyStatic, CStatic)
-	ON_WM_MOUSEMOVE()
-	ON_WM_MOUSEHOVER()
-	ON_WM_SETCURSOR()
+ON_WM_MOUSEMOVE()
+ON_WM_MOUSEHOVER()
+ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 void CMyStatic::OnMouseMove(UINT nFlags, CPoint point)
 {
-	
+
 	CStatic::OnMouseMove(nFlags, point);
 	::SetCursor(::LoadCursor(NULL, IDC_HAND));
 }
 
-BOOL CMyStatic::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT	message)
+BOOL CMyStatic::OnSetCursor(CWnd *pWnd, UINT nHitTest, UINT message)
 {
 
 	::SetCursor(::LoadCursor(NULL, IDC_HAND));
 	return TRUE;
-//	if (cursor)
+	//	if (cursor)
 	//{
-		//if (cursor == (char*)-1)
-			// the main exe contains a custom cursor (resource 104)
-			//SetCursor(LoadCursor(AfxGetInstanceHandle(),
-				//MAKEINTRESOURCE(104)));
-		//else
-			//return SetCursor(LoadCursor(NULL, cursor));
-//		return true;
-//	}
-//	else
-//		return CStatic::OnSetCursor(pWnd, nHitTest, message);
-
+	// if (cursor == (char*)-1)
+	// the main exe contains a custom cursor (resource 104)
+	// SetCursor(LoadCursor(AfxGetInstanceHandle(),
+	// MAKEINTRESOURCE(104)));
+	// else
+	// return SetCursor(LoadCursor(NULL, cursor));
+	//		return true;
+	//	}
+	//	else
+	//		return CStatic::OnSetCursor(pWnd, nHitTest, message);
 }
 
 void CMyStatic::OnMouseHover(UINT nFlags, CPoint point)
@@ -63,13 +65,16 @@ public:
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_ABOUTBOX };
+	enum
+	{
+		IDD = IDD_ABOUTBOX
+	};
 #endif
 
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+protected:
+	virtual void DoDataExchange(CDataExchange *pDX); // DDX/DDV support
 
-// Implementation
+	// Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -78,7 +83,7 @@ CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
 {
 }
 
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+void CAboutDlg::DoDataExchange(CDataExchange *pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 }
@@ -86,12 +91,9 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
 END_MESSAGE_MAP()
 
-
 // CPesoNetTimerDlg dialog
 
-
-
-CPesoNetTimerDlg::CPesoNetTimerDlg(CWnd* pParent /*=nullptr*/)
+CPesoNetTimerDlg::CPesoNetTimerDlg(CWnd *pParent /*=nullptr*/)
 	: CDialogEx(IDD_PESONETTIMER_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -99,7 +101,7 @@ CPesoNetTimerDlg::CPesoNetTimerDlg(CWnd* pParent /*=nullptr*/)
 	m_hStopThread = NULL;
 }
 
-void CPesoNetTimerDlg::DoDataExchange(CDataExchange* pDX)
+void CPesoNetTimerDlg::DoDataExchange(CDataExchange *pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO_TIME, m_ctrlComboBoxTime);
@@ -108,20 +110,19 @@ void CPesoNetTimerDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(CPesoNetTimerDlg, CDialogEx)
-	ON_WM_SYSCOMMAND()
-	ON_WM_PAINT()
-	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDOK, &CPesoNetTimerDlg::OnBnClickedOk)
-	ON_BN_CLICKED(IDCANCEL, &CPesoNetTimerDlg::OnBnClickedCancel)
-	ON_MESSAGE(WM_DISPLAY_COUNT_DOWN, &CPesoNetTimerDlg::OnDisplayCountDown)
-	ON_MESSAGE(WM_TRAYICON_EVENT, &CPesoNetTimerDlg::OnTrayIconEvent)
-	ON_WM_MOUSEMOVE()
-	ON_COMMAND(IDC_STATIC_LOGO, &CPesoNetTimerDlg::OnStatic)
-	ON_WM_LBUTTONDOWN()
-	ON_WM_NCMOUSEMOVE()
-	ON_WM_MOUSEHOVER()
+ON_WM_SYSCOMMAND()
+ON_WM_PAINT()
+ON_WM_QUERYDRAGICON()
+ON_BN_CLICKED(IDOK, &CPesoNetTimerDlg::OnBnClickedOk)
+ON_BN_CLICKED(IDCANCEL, &CPesoNetTimerDlg::OnBnClickedCancel)
+ON_MESSAGE(WM_DISPLAY_COUNT_DOWN, &CPesoNetTimerDlg::OnDisplayCountDown)
+ON_MESSAGE(WM_TRAYICON_EVENT, &CPesoNetTimerDlg::OnTrayIconEvent)
+ON_WM_MOUSEMOVE()
+ON_COMMAND(IDC_STATIC_LOGO, &CPesoNetTimerDlg::OnStatic)
+ON_WM_LBUTTONDOWN()
+ON_WM_NCMOUSEMOVE()
+ON_WM_MOUSEHOVER()
 END_MESSAGE_MAP()
-
 
 // CPesoNetTimerDlg message handlers
 
@@ -133,14 +134,14 @@ BOOL CPesoNetTimerDlg::OnInitDialog()
 	RECT rect;
 	GetClientRect(&rect);
 
-	//rect.bottom += 35;
-	//rect.right += 10;
-	
+	// rect.bottom += 35;
+	// rect.right += 10;
+
 	// IDM_ABOUTBOX must be in the system command range.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
+	CMenu *pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu != nullptr)
 	{
 		BOOL bNameValid;
@@ -156,8 +157,8 @@ BOOL CPesoNetTimerDlg::OnInitDialog()
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
-	SetIcon(m_hIcon, TRUE);			// Set big icon
-	SetIcon(m_hIcon, FALSE);		// Set small icon
+	SetIcon(m_hIcon, TRUE);	 // Set big icon
+	SetIcon(m_hIcon, FALSE); // Set small icon
 
 	// TODO: Add extra initialization here
 	m_ctrlStaticLogo.ModifyStyle(NULL, SS_NOTIFY);
@@ -180,14 +181,14 @@ BOOL CPesoNetTimerDlg::OnInitDialog()
 	}
 
 	m_pToolTipCtrl->Activate(TRUE);
-	//m_pToolTipCtrl->SetToolRect(&m_ctrlStaticLogo,rect);
-	return TRUE;  // return TRUE  unless you set the focus to a control
+	// m_pToolTipCtrl->SetToolRect(&m_ctrlStaticLogo,rect);
+	return TRUE; // return TRUE  unless you set the focus to a control
 }
 
 void CPesoNetTimerDlg::InitializeTime()
 {
 	CTimeChoice oTimeChoice;
-	DWORD dwMilliSec = 60000;
+	ULONGLONG dwMilliSec = 60000;
 
 	oTimeChoice.csTimeText = _T("30 seconds");
 	oTimeChoice.dwMilliseconds = 30000;
@@ -253,7 +254,6 @@ void CPesoNetTimerDlg::InitializeTime()
 	oTimeChoice.dwMilliseconds = dwMilliSec * 60 * 5;
 	m_vTimeChoice.push_back(oTimeChoice);
 
-
 	for (int i = 0; i < m_vTimeChoice.size(); i++)
 	{
 		m_ctrlComboBoxTime.AddString(m_vTimeChoice[i].csTimeText);
@@ -315,28 +315,28 @@ HCURSOR CPesoNetTimerDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-unsigned _stdcall CPesoNetTimerDlg::TimerThread(void* args)
+unsigned _stdcall CPesoNetTimerDlg::TimerThread(void *args)
 {
-	CPesoNetTimerDlg* pDlg = (CPesoNetTimerDlg*)args;
+	CPesoNetTimerDlg *pDlg = (CPesoNetTimerDlg *)args;
 	LASTINPUTINFO lastInput;
-	DWORD dwTickCount = 0;
-	DWORD dwSelectedTimer = pDlg->m_dwSelectedTime;
-	DWORD dwTimeIdle = 0;
+	ULONGLONG dwTickCount = 0;
+	ULONGLONG dwSelectedTimer = pDlg->m_dwSelectedTime;
+	ULONGLONG dwTimeIdle = 0;
 	BOOL bRet = 0;
 	ZeroMemory(&lastInput, sizeof(lastInput));
 	lastInput.cbSize = sizeof(lastInput);
-	
+
 	do
 	{
 		bRet = GetLastInputInfo(&lastInput);
-		dwTickCount = GetTickCount();
+		dwTickCount = GetTickCount64();
 		dwTimeIdle = dwTickCount - lastInput.dwTime;
 		if ((dwSelectedTimer - dwTimeIdle) < 10000)
 		{
 			pDlg->ShowWindow(SW_NORMAL);
 			pDlg->SetFocus();
 			pDlg->SetForegroundWindow();
-			::SendMessage(pDlg->GetSafeHwnd(), WM_DISPLAY_COUNT_DOWN, (dwSelectedTimer - dwTimeIdle)/1000, SW_NORMAL);
+			::SendMessage(pDlg->GetSafeHwnd(), WM_DISPLAY_COUNT_DOWN, (dwSelectedTimer - dwTimeIdle) / 1000, SW_NORMAL);
 			if ((dwSelectedTimer - dwTimeIdle) < 1000)
 			{
 				system("shutdown /s /f /t 0");
@@ -354,14 +354,14 @@ unsigned _stdcall CPesoNetTimerDlg::TimerThread(void* args)
 void CPesoNetTimerDlg::OnBnClickedOk()
 {
 	// TODO: Add your control notification handler code here
-	//CDialogEx::OnOK();
-	//shutdown /s /t 0
+	// CDialogEx::OnOK();
+	// shutdown /s /t 0
 	m_dwSelectedTime = m_vTimeChoice[m_ctrlComboBoxTime.GetCurSel()].dwMilliseconds;
 	if (m_hThreadTimer)
 	{
 		SetEvent(m_hStopThread);
 		while (::MsgWaitForMultipleObjects(1, &m_hThreadTimer, FALSE, INFINITE,
-			QS_SENDMESSAGE) == WAIT_OBJECT_0 + 1)
+										   QS_SENDMESSAGE) == WAIT_OBJECT_0 + 1)
 		{
 			MSG message;
 			::PeekMessage(&message, 0, 0, 0, PM_NOREMOVE);
@@ -371,9 +371,9 @@ void CPesoNetTimerDlg::OnBnClickedOk()
 		m_hThreadTimer = NULL;
 		m_hStopThread = NULL;
 	}
-	m_hStopThread = CreateEvent(NULL, TRUE, FALSE,NULL);
-	m_hThreadTimer = (HANDLE)_beginthreadex(NULL,0, TimerThread,this,0, NULL);
-	
+	m_hStopThread = CreateEvent(NULL, TRUE, FALSE, NULL);
+	m_hThreadTimer = (HANDLE)_beginthreadex(NULL, 0, TimerThread, this, 0, NULL);
+
 	ShowWindow(SW_HIDE);
 	CreateTrayIcon();
 	SetTrayIconTipText(TEXT("Enzo Tech Peso-Net Timer"));
@@ -386,7 +386,7 @@ void CPesoNetTimerDlg::OnBnClickedCancel()
 	{
 		SetEvent(m_hStopThread);
 		while (::MsgWaitForMultipleObjects(1, &m_hThreadTimer, FALSE, INFINITE,
-			QS_SENDMESSAGE) == WAIT_OBJECT_0 + 1)
+										   QS_SENDMESSAGE) == WAIT_OBJECT_0 + 1)
 		{
 			MSG message;
 			::PeekMessage(&message, 0, 0, 0, PM_NOREMOVE);
@@ -414,7 +414,7 @@ afx_msg LRESULT CPesoNetTimerDlg::OnDisplayCountDown(WPARAM wParam, LPARAM lPara
 			csText.Format(_T("PC is shutting down in %d seconds."), (INT)(wParam));
 		m_ctrlStaticDisplay.SetWindowText(csText);
 	}
-	else if(lParam == SW_HIDE)
+	else if (lParam == SW_HIDE)
 	{
 		m_ctrlStaticDisplay.SetWindowText(_T(""));
 	}
@@ -425,7 +425,7 @@ void CPesoNetTimerDlg::EnableCloseButton(bool bEnable)
 {
 	UINT nMenuf = bEnable ? (MF_BYCOMMAND) : (MF_BYCOMMAND | MF_GRAYED | MF_DISABLED);
 
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
+	CMenu *pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu)
 		pSysMenu->EnableMenuItem(SC_CLOSE, nMenuf);
 }
@@ -442,10 +442,10 @@ BOOL CPesoNetTimerDlg::CreateTrayIcon()
 	ASSERT(::IsWindow(GetSafeHwnd()));
 	m_NID.hWnd = GetSafeHwnd();
 
-	// set message that will be sent from tray icon to the window 
+	// set message that will be sent from tray icon to the window
 	m_NID.uCallbackMessage = WM_TRAYICON_EVENT;
 
-	// fields that are being set when adding tray icon 
+	// fields that are being set when adding tray icon
 	m_NID.uFlags = NIF_MESSAGE | NIF_ICON;
 
 	// set image
@@ -511,7 +511,7 @@ BOOL CPesoNetTimerDlg::SetTrayIcon(WORD wIconID)
 
 void CPesoNetTimerDlg::OnDestroy()
 {
-	
+
 	CDialog::OnDestroy();
 }
 
@@ -522,78 +522,76 @@ LRESULT CPesoNetTimerDlg::OnTrayIconEvent(WPARAM wParam, LPARAM lParam)
 
 	switch ((UINT)lParam)
 	{
-		case WM_MOUSEMOVE:
-		{
-			// do something
-			// e.g. save mouse position in time of event
-			GetCursorPos(&m_ptMouseHoverEvent);
-			break;
-		}
-		case WM_LBUTTONDBLCLK:
-		{
-			// do something
-			// e.g. save mouse position in time of event
-			ShowWindow(SW_NORMAL);
-			DestroyTrayIcon();
-			break;
-		}
-/*		case WM_LBUTTONUP:
-		{
-			// e.g. show main dialog or set (new) tip text and display baloon:
+	case WM_MOUSEMOVE:
+	{
+		// do something
+		// e.g. save mouse position in time of event
+		GetCursorPos(&m_ptMouseHoverEvent);
+		break;
+	}
+	case WM_LBUTTONDBLCLK:
+	{
+		// do something
+		// e.g. save mouse position in time of event
+		ShowWindow(SW_NORMAL);
+		DestroyTrayIcon();
+		break;
+	}
+		/*		case WM_LBUTTONUP:
+				{
+					// e.g. show main dialog or set (new) tip text and display baloon:
 
-			CTime timeCurr = CTime::GetCurrentTime();
-			CString strTimeCurr;
-			strTimeCurr.Format(TEXT("%d:%d:%d"), timeCurr.GetHour(), timeCurr.GetMinute(), timeCurr.GetSecond());
-			CString strText(TEXT("This text was set at "));
-			strText += strTimeCurr;
+					CTime timeCurr = CTime::GetCurrentTime();
+					CString strTimeCurr;
+					strTimeCurr.Format(TEXT("%d:%d:%d"), timeCurr.GetHour(), timeCurr.GetMinute(), timeCurr.GetSecond());
+					CString strText(TEXT("This text was set at "));
+					strText += strTimeCurr;
 
-			SetTrayIconTipText((LPCTSTR)strText);
+					SetTrayIconTipText((LPCTSTR)strText);
 
-			ShowTrayIconBalloon(TEXT("Baloon message title"), TEXT("Left click!"), 1000, NIIF_INFO);
+					ShowTrayIconBalloon(TEXT("Baloon message title"), TEXT("Left click!"), 1000, NIIF_INFO);
 
-			break;
-		}
-		case WM_RBUTTONUP:
-		{
-			// e.g. show context menu or disable tip and display baloon:
+					break;
+				}
+				case WM_RBUTTONUP:
+				{
+					// e.g. show context menu or disable tip and display baloon:
 
-			SetTrayIconTipText((LPCTSTR)TEXT(""));
-			ShowTrayIconBalloon(TEXT("Baloon message title"), TEXT("Right click!"), 1000, NIIF_INFO);
-			break;
-		}*/
+					SetTrayIconTipText((LPCTSTR)TEXT(""));
+					ShowTrayIconBalloon(TEXT("Baloon message title"), TEXT("Right click!"), 1000, NIIF_INFO);
+					break;
+				}*/
 	}
 
 	return ERROR_SUCCESS;
 }
 
-
 void CPesoNetTimerDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-/*	RECT rectDlg, translatedRect;
-	this->GetWindowRect(&rectDlg);
-	m_ctrlStaticLogo.GetClientRect(&translatedRect);
+	/*	RECT rectDlg, translatedRect;
+		this->GetWindowRect(&rectDlg);
+		m_ctrlStaticLogo.GetClientRect(&translatedRect);
 
-	translatedRect.left = rectDlg.left + 20;
-	translatedRect.top = rectDlg.top + 30;
-	translatedRect.right = translatedRect.right + translatedRect.left;
-	translatedRect.bottom = translatedRect.bottom + translatedRect.top;
+		translatedRect.left = rectDlg.left + 20;
+		translatedRect.top = rectDlg.top + 30;
+		translatedRect.right = translatedRect.right + translatedRect.left;
+		translatedRect.bottom = translatedRect.bottom + translatedRect.top;
 
-	if ((translatedRect.left <= (point.x)) && ((point.x) <= translatedRect.right) &&
-		((translatedRect.top) <= point.y) && (point.y <= (translatedRect.bottom)))
-	{
-	//	m_pToolTipCtrl->EnableToolTips();
-		SetCursor(LoadCursor(NULL, IDC_HAND));
-	}
-	else
-	{
-	//	m_pToolTipCtrl->EnableToolTips(FALSE);
-		SetCursor(LoadCursor(NULL, IDC_ARROW));
-	}
-	*/
+		if ((translatedRect.left <= (point.x)) && ((point.x) <= translatedRect.right) &&
+			((translatedRect.top) <= point.y) && (point.y <= (translatedRect.bottom)))
+		{
+		//	m_pToolTipCtrl->EnableToolTips();
+			SetCursor(LoadCursor(NULL, IDC_HAND));
+		}
+		else
+		{
+		//	m_pToolTipCtrl->EnableToolTips(FALSE);
+			SetCursor(LoadCursor(NULL, IDC_ARROW));
+		}
+		*/
 
 	CDialogEx::OnMouseMove(nFlags, point);
 }
-
 
 void CPesoNetTimerDlg::OnStatic()
 {
@@ -601,15 +599,13 @@ void CPesoNetTimerDlg::OnStatic()
 	ShellExecute(NULL, _T("open"), _T("https://m.me/Lorenzo.Leonardo.92"), NULL, NULL, SW_SHOWNORMAL);
 }
 
-
-BOOL CPesoNetTimerDlg::PreTranslateMessage(MSG* pMsg)
+BOOL CPesoNetTimerDlg::PreTranslateMessage(MSG *pMsg)
 {
 	// TODO: Add your specialized code here and/or call the base class
 	m_pToolTipCtrl->RelayEvent(pMsg);
-	
+
 	return CDialogEx::PreTranslateMessage(pMsg);
 }
-
 
 void CPesoNetTimerDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
@@ -631,14 +627,12 @@ void CPesoNetTimerDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
 
-
 void CPesoNetTimerDlg::OnNcMouseMove(UINT nHitTest, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 
 	CDialogEx::OnNcMouseMove(nHitTest, point);
 }
-
 
 void CPesoNetTimerDlg::OnMouseHover(UINT nFlags, CPoint point)
 {
